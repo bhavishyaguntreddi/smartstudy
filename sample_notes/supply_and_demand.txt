@@ -1,0 +1,9 @@
+Supply and Demand
+
+Demand is the quantity of a good that buyers are willing and able to buy at each price. The law of demand says that, other things equal, when the price of a good rises, the quantity demanded falls. Supply is the quantity that sellers are willing to sell at each price. The law of supply says that, other things equal, when the price rises, the quantity supplied rises.
+
+The equilibrium price is the price at which quantity demanded equals quantity supplied. At this price there is no shortage and no surplus. If the price is above equilibrium, there is a surplus, meaning more is supplied than demanded, and sellers tend to cut prices. If the price is below equilibrium, there is a shortage and prices tend to rise.
+
+A change in price causes a movement along the demand curve. A change in something else, such as buyers' incomes, tastes or the price of a related good, shifts the whole demand curve. For example, if a new study shows a food is healthy, demand may increase and the curve shifts right, which raises the equilibrium price and quantity.
+
+Price elasticity of demand measures how much quantity demanded changes when price changes. Demand is elastic if quantity changes by a larger percentage than price, and inelastic if it changes by a smaller percentage. Goods with few substitutes, such as petrol, tend to have more inelastic demand.
