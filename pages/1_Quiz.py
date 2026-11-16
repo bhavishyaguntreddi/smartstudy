@@ -77,7 +77,8 @@ if q is None or result is not None:
     if st.button("New question" if q is None else "Next question"):
         try:
             with st.spinner("Writing a question from your notes..."):
-                new_q = make_question(sid, topic, level, avoid=st.session_state.asked[-5:])
+                new_q = make_question(sid, topic, level, avoid=st.session_state.asked[-5:],
+                                      plain=settings["plain"])
         except Exception:
             st.error("Could not write a question this time. Please try again.")
         else:

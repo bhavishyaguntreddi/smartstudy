@@ -28,9 +28,12 @@ Rules:
 {"question": "...", "correct_answer": "...", "wrong_answers": ["...", "...", "..."], "source": 1}
 where "source" is the number of the note that supports the correct answer."""
 
-def make_question(session_id, topic, level, avoid=()):
-    """Build one multiple-choice question for a topic and level from the stored notes."""
-    res = get_collection(session_id).get(where={"topic": topic})          # all chunks for this topic
+PLAIN_EXTRA = ("\nPlain English mode: write the question and all four options in very short "
+               "sentences and everyday words. Keep every option short.")
+
+def make_question(session_id, topic, level, avoid=(), plain=False):
+    """Build one multiple-choice question for a topic and level from this visitor's notes."""
+    res = get_collection(session_id).get(where={"topic": topic})   # all chunks for this topic
     items = list(zip(res["documents"], res["metadatas"]))
     if not items:
         raise ValueError(f"No notes stored for topic '{topic}'")
@@ -41,7 +44,8 @@ def make_question(session_id, topic, level, avoid=()):
                         for i, (d, m) in enumerate(items, 1))
     avoid_text = ("\nDo not repeat these questions:\n- " + "\n- ".join(avoid)) if avoid else ""
     response = client.messages.create(
-        model=MODEL, max_tokens=1500, system=SYSTEM,
+        model=MODEL, max_tokens=1500,
+        system=SYSTEM + (PLAIN_EXTRA if plain else ""),
         messages=[{"role": "user", "content":
                    f"NOTES:\n{notes}\n\nLEVEL: {level}. {LEVEL_RULES[level]}{avoid_text}\n\nWrite one question."}],
     )
@@ -68,4 +72,3 @@ def make_question(session_id, topic, level, avoid=()):
         "source_text": doc, "source_file": meta["source"], "source_page": meta["page"],
         "tokens": (response.usage.input_tokens, response.usage.output_tokens),
     }
-

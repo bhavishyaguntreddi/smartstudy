@@ -55,7 +55,7 @@ else:
         topic = None if scope == "All my notes" else scope
         try:
             with st.spinner("Searching your notes..."):
-                result = answer(question.strip(), sid, topic=topic)
+                result = answer(question.strip(), sid, topic=topic, plain=settings["plain"])
             st.session_state.last = result
         except Exception:
             st.error("Something went wrong while answering. Please try again.")
