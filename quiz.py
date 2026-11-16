@@ -3,7 +3,7 @@ import json
 import random
 from dotenv import load_dotenv
 import anthropic
-from store import collection
+from store import get_collection
 
 load_dotenv()
 client = anthropic.Anthropic()
@@ -28,9 +28,9 @@ Rules:
 {"question": "...", "correct_answer": "...", "wrong_answers": ["...", "...", "..."], "source": 1}
 where "source" is the number of the note that supports the correct answer."""
 
-def make_question(topic, level, avoid=()):
+def make_question(session_id, topic, level, avoid=()):
     """Build one multiple-choice question for a topic and level from the stored notes."""
-    res = collection.get(where={"topic": topic})            # all chunks for this topic
+    res = get_collection(session_id).get(where={"topic": topic})          # all chunks for this topic
     items = list(zip(res["documents"], res["metadatas"]))
     if not items:
         raise ValueError(f"No notes stored for topic '{topic}'")
@@ -69,14 +69,3 @@ def make_question(topic, level, avoid=()):
         "tokens": (response.usage.input_tokens, response.usage.output_tokens),
     }
 
-if __name__ == "__main__":   # quick test: python quiz.py
-    for level in ["easy", "medium", "hard"]:
-        q = make_question("photosynthesis", level)
-        print(f"\n=== {level.upper()} ===")
-        print(q["question"])
-        for o in q["options"]:
-            print(f"  {o['label']}. {o['text']}")
-        print("correct:", q["correct_label"])
-        print("CHECK against notes:", q["source_file"], "| page", q["source_page"])
-        print("  ", q["source_text"][:200], "...")
-        print("tokens in/out:", q["tokens"])

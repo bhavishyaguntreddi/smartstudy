@@ -34,17 +34,3 @@ def explain(question, chosen, correct, note, plain=False):
     text = "".join(b.text for b in response.content if b.type == "text").strip()
     return {"text": text, "tokens": (response.usage.input_tokens, response.usage.output_tokens)}
 
-if __name__ == "__main__":   # quick test: python explain.py
-    from quiz import make_question
-    q = make_question("supply_and_demand", "medium")
-    wrong = next(o for o in q["options"] if o["label"] != q["correct_label"])
-    print("Q:", q["question"])
-    for o in q["options"]:
-        print(f"  {o['label']}. {o['text']}")
-    print("Student picks:", wrong["label"], "| Correct:", q["correct_label"])
-    for plain in (False, True):
-        r = explain(q["question"], wrong["text"], q["correct_answer"], q["source_text"], plain=plain)
-        print(f"\n--- plain_english={plain} ---")
-        print(r["text"])
-        print("tokens in/out:", r["tokens"])
-    print("\nCHECK against notes:", q["source_file"], "|", q["source_text"][:200], "...")
