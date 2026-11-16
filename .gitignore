@@ -1,0 +1,14 @@
+# Private box of libraries (huge, and rebuilt any time)
+.venv/
+
+# SECRETS: never commit these
+.env
+.streamlit/secrets.toml
+
+# Python junk
+__pycache__/
+
+# Local data: student notes and results must never be shared
+chroma_db/
+data/
+*.db 
