@@ -2,9 +2,11 @@
 import streamlit as st
 from session import get_session_id
 from database import progress_summary, why_this, WINDOW
+from accessibility import apply_settings
 
 st.set_page_config(page_title="SmartStudy - Progress")
-sid = get_session_id()
+sid = get_session_id()          # this visitor's private ID
+settings = apply_settings()     # Settings sidebar (high contrast, large text, plain English)
 
 st.title("My progress")
 rows = progress_summary(sid)
@@ -32,3 +34,4 @@ with st.expander("Why this?"):
     st.write(f"- Rule: the last {WINDOW} answers decide. 80% or more moves you up a level; "
              "below 50% moves you to easier practice.")
     st.write("- Nothing here comes from other users.")
+    

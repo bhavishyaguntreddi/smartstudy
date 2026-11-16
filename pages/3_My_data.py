@@ -3,9 +3,11 @@ import streamlit as st
 from session import get_session_id
 from store import get_collection, delete_all
 from database import export_results, delete_progress
+from accessibility import apply_settings
 
 st.set_page_config(page_title="SmartStudy - My data")
-sid = get_session_id()
+sid = get_session_id()          # this visitor's private ID
+settings = apply_settings()     # Settings sidebar (high contrast, large text, plain English)
 
 if st.session_state.pop("just_deleted", False):   # message after a delete
     st.success("Done. Your notes and results have been deleted.")

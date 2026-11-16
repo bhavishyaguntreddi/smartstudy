@@ -1,18 +1,19 @@
-# app.py - SmartStudy: upload notes and ask questions (first page)
+# app.py - SmartStudy: upload notes and ask questions (main page)
 import tempfile
-import uuid
 from pathlib import Path
 import streamlit as st
 from dotenv import load_dotenv
 
 load_dotenv()   # reads your key from .env when running on your computer
-from store import add_file, get_collection
+from store import add_file
 from answer import answer, N_CHUNKS
+from session import get_session_id, get_topics
+from accessibility import apply_settings, read_aloud
 
 st.set_page_config(page_title="SmartStudy")
 
-from session import get_session_id, get_topics
-sid = get_session_id()   # each visitor gets a random ID, so notes and results stay private
+sid = get_session_id()          # each visitor gets a random ID, so notes and results stay private
+settings = apply_settings()     # shows the Settings sidebar and applies the look
 
 MAX_MB = 5   # reject big files (keeps the free server from running out of memory)
 
@@ -64,6 +65,7 @@ r = st.session_state.get("last")
 if r:
     st.subheader("Answer")
     st.write(r["answer"])
+    read_aloud(r["answer"], contrast=settings["contrast"])   # text stays on screen too
     if r["sources"]:
         st.write("Sources (open one to read the passage):")
         for s in r["sources"]:
