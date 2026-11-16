@@ -28,3 +28,50 @@ LARGE_TEXT_CSS = "html { font-size: 125% !important; }"   # scales text that use
 
 def apply_settings():
     """Show the Settings controls, apply the look, and return the choices."""
+    st.sidebar.header("Settings")
+    # value=... remembers the choice when moving between pages
+    contrast = st.sidebar.checkbox("High contrast", value=st.session_state.get("s_contrast", False))
+    large = st.sidebar.checkbox("Large text", value=st.session_state.get("s_large", False))
+    plain = st.sidebar.checkbox("Plain English", value=st.session_state.get("s_plain", False))
+    st.session_state.s_contrast, st.session_state.s_large, st.session_state.s_plain = contrast, large, plain
+    st.sidebar.caption("These settings apply to this browser tab only. Nothing is stored.")
+
+    css = (HIGH_CONTRAST_CSS if contrast else "") + (LARGE_TEXT_CSS if large else "")
+    if css:   # our own fixed text only, no user input, so this is safe
+        st.markdown(f"<style>{css}</style>", unsafe_allow_html=True)
+    return {"contrast": contrast, "large": large, "plain": plain}
+
+def read_aloud(text, label="Read aloud", contrast=False):
+    """A Read aloud button + Stop button, using the browser's own speech. Text stays on screen too."""
+    clean = text.replace("**", "")                                  # don't read out markdown stars
+    safe = json.dumps(clean).replace("</", "<\\/")                  # safe to put inside a script
+    bg, fg, border = ("#000", "#fff", "#fff") if contrast else ("#fff", "#262730", "#999")
+    style = (f"padding:8px 14px;font-size:16px;cursor:pointer;background:{bg};color:{fg};"
+             f"border:2px solid {border};border-radius:6px;margin-right:8px")
+    html = """
+    <div style="font-family:sans-serif">
+      <button id="say" style="__STYLE__">__LABEL__</button>
+      <button id="stop" style="__STYLE__">Stop</button>
+      <span id="msg" role="status" style="color:__FG__"></span>
+    </div>
+    <script>
+      const text = __TEXT__;
+      const say = document.getElementById('say'), stop = document.getElementById('stop');
+      const msg = document.getElementById('msg');
+      if (!('speechSynthesis' in window)) {
+        say.disabled = true; stop.disabled = true;
+        msg.textContent = 'Read aloud is not available in this browser. The text is shown on the page.';
+      }
+      say.onclick = () => {
+        window.speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(text);
+        u.lang = 'en-GB';
+        u.onend = () => { msg.textContent = ''; };
+        msg.textContent = 'Reading aloud...';
+        window.speechSynthesis.speak(u);
+      };
+      stop.onclick = () => { window.speechSynthesis.cancel(); msg.textContent = 'Stopped.'; };
+    </script>"""
+    html = (html.replace("__STYLE__", style).replace("__LABEL__", label)
+                .replace("__FG__", fg).replace("__TEXT__", safe))
+    components.html(html, height=60)
