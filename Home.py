@@ -1,4 +1,4 @@
-# app.py - SmartStudy: upload notes and ask questions (main page)
+# Home.py - SmartStudy: upload notes and ask questions (main page)
 import tempfile
 from pathlib import Path
 import streamlit as st
@@ -9,6 +9,7 @@ from store import add_file
 from answer import answer, N_CHUNKS
 from session import get_session_id, get_topics
 from accessibility import apply_settings, read_aloud
+from limits import use_one_call
 
 st.set_page_config(page_title="SmartStudy")
 
@@ -52,13 +53,17 @@ else:
         question = st.text_input("Your question")
         submitted = st.form_submit_button("Ask")
     if submitted and question.strip():
-        topic = None if scope == "All my notes" else scope
-        try:
-            with st.spinner("Searching your notes..."):
-                result = answer(question.strip(), sid, topic=topic, plain=settings["plain"])
-            st.session_state.last = result
-        except Exception:
-            st.error("Something went wrong while answering. Please try again.")
+        allowed, limit_msg = use_one_call()          # usage limit check
+        if not allowed:
+            st.warning(limit_msg)
+        else:
+            topic = None if scope == "All my notes" else scope
+            try:
+                with st.spinner("Searching your notes..."):
+                    result = answer(question.strip(), sid, topic=topic, plain=settings["plain"])
+                st.session_state.last = result
+            except Exception:
+                st.error("Something went wrong while answering. Please try again.")
 
 # ---------- Answer, sources, Why this? ----------
 r = st.session_state.get("last")

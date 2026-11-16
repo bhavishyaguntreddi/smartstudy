@@ -5,6 +5,7 @@ from quiz import make_question
 from explain import explain
 from database import save_result, why_this, LEVELS
 from accessibility import apply_settings, read_aloud
+from limits import use_one_call
 
 st.set_page_config(page_title="SmartStudy - Quiz")
 sid = get_session_id()          # this visitor's private ID
@@ -43,12 +44,16 @@ if q and result is None:
         ok = save_result(sid, topic, level, q["question"], chosen, q["correct_answer"])
         expl = None
         if not ok:                                   # wrong: explain from the notes
-            try:
-                with st.spinner("Writing an explanation..."):
-                    expl = explain(q["question"], chosen, q["correct_answer"], q["source_text"],
-                                   plain=settings["plain"])["text"]
-            except Exception:
-                expl = "Sorry, the explanation could not be written this time."
+            allowed, limit_msg = use_one_call()      # usage limit check
+            if not allowed:
+                expl = limit_msg
+            else:
+                try:
+                    with st.spinner("Writing an explanation..."):
+                        expl = explain(q["question"], chosen, q["correct_answer"], q["source_text"],
+                                       plain=settings["plain"])["text"]
+                except Exception:
+                    expl = "Sorry, the explanation could not be written this time."
         st.session_state.quiz_result = {"ok": ok, "chosen": chosen, "expl": expl, "before": level}
         st.rerun()
 
@@ -75,16 +80,20 @@ if q and result is not None:
 # --- Ask for the next question ---
 if q is None or result is not None:
     if st.button("New question" if q is None else "Next question"):
-        try:
-            with st.spinner("Writing a question from your notes..."):
-                new_q = make_question(sid, topic, level, avoid=st.session_state.asked[-5:],
-                                      plain=settings["plain"])
-        except Exception:
-            st.error("Could not write a question this time. Please try again.")
+        allowed, limit_msg = use_one_call()          # usage limit check
+        if not allowed:
+            st.warning(limit_msg)
         else:
-            st.session_state.update(quiz=new_q, quiz_result=None)
-            st.session_state.asked.append(new_q["question"])
-            st.rerun()
+            try:
+                with st.spinner("Writing a question from your notes..."):
+                    new_q = make_question(sid, topic, level, avoid=st.session_state.asked[-5:],
+                                          plain=settings["plain"])
+            except Exception:
+                st.error("Could not write a question this time. Please try again.")
+            else:
+                st.session_state.update(quiz=new_q, quiz_result=None)
+                st.session_state.asked.append(new_q["question"])
+                st.rerun()
 
 # --- Why this? ---
 with st.expander("Why this?"):
